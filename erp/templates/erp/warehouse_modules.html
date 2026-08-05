@@ -1,0 +1,76 @@
+{% extends 'erp/base.html' %}
+
+
+{% block main_content %}
+
+
+<div class="product_card_contener">
+    <div class="sorting_table">
+        <p>Product name</p><p>Product code (SKU)</p><p>Price (netto)</p><p>Availability</p><p style="border: none;">EAN code</p>
+    </div>
+      <div class="product_card_empty">
+            <p class="sidebar_title">Product has not been found</p>
+        </div>
+    {% for product in warehouse_products %}
+    <div class="product_card">
+        <p class="product_name">{{ product.product_name }}</p>
+        <p class="product_codename">{{ product.product_code_sku }}</p>
+        <p class="product_price">{{ product.product_price }}</p>
+        <p>{{ product.product_stock_qty }}</p>
+        <p style="border: none;" class="product_ean">{{ product.product_ean }}</p>
+    </div>
+    {% endfor %}
+
+</div>
+
+{% endblock %}
+
+
+
+{% block sidebar_content %}
+<div class="sidebar_card">
+    <p class="sidebar_title">Warehouse stock status</p>
+    <p class="subtext">Search for product</p>
+    <div class="search_bar_container">
+        <input type="text" id="search_input" class="search_bar" title="WPISZ NAZWĘ PRODUKTU LUB SKU / EAN " name="Wyszukaj product">
+        <svg class="icon_standard_size icon_tint clear_icon" style="display: none; cursor:pointer" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M504.6 148.5C515.9 134.9 514.1 114.7 500.5 103.4C486.9 92.1 466.7 93.9 455.4 107.5L320 270L184.6 107.5C173.3 93.9 153.1 92.1 139.5 103.4C125.9 114.7 124.1 134.9 135.4 148.5L278.3 320L135.4 491.5C124.1 505.1 125.9 525.3 139.5 536.6C153.1 547.9 173.3 546.1 184.6 532.5L320 370L455.4 532.5C466.7 546.1 486.9 547.9 500.5 536.6C514.1 525.3 515.9 505.1 504.6 491.5L361.7 320L504.6 148.5z"/></svg>
+        <svg class="icon_standard_size icon_tint search_icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M480 272C480 317.9 465.1 360.3 440 394.7L566.6 521.4C579.1 533.9 579.1 554.2 566.6 566.7C554.1 579.2 533.8 579.2 521.3 566.7L394.7 440C360.3 465.1 317.9 480 272 480C157.1 480 64 386.9 64 272C64 157.1 157.1 64 272 64C386.9 64 480 157.1 480 272zM272 416C351.5 416 416 351.5 416 272C416 192.5 351.5 128 272 128C192.5 128 128 192.5 128 272C128 351.5 192.5 416 272 416z"/></svg>
+    </div>
+    
+    <div class="filter_search_container">
+        <p class="subtext">Apply filters</p>
+        <svg class="icon_small_size icon_tint filter_icon_show" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M297.4 438.6C309.9 451.1 330.2 451.1 342.7 438.6L502.7 278.6C515.2 266.1 515.2 245.8 502.7 233.3C490.2 220.8 469.9 220.8 457.4 233.3L320 370.7L182.6 233.4C170.1 220.9 149.8 220.9 137.3 233.4C124.8 245.9 124.8 266.2 137.3 278.7L297.3 438.7z"/></svg>
+        <svg class="icon_small_size icon_tint filter_icon_hide" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M297.4 201.4C309.9 188.9 330.2 188.9 342.7 201.4L502.7 361.4C515.2 373.9 515.2 394.2 502.7 406.7C490.2 419.2 469.9 419.2 457.4 406.7L320 269.3L182.6 406.6C170.1 419.1 149.8 419.1 137.3 406.6C124.8 394.1 124.8 373.8 137.3 361.3L297.3 201.3z"/></svg>
+    </div>
+    <div class="filter_search_container_options">
+        <div class="filter_option available">
+            <div class="icon_small_size"></div>
+            <p class="subtext">Show only available</p>
+        </div>
+
+        <div class="filter_option unavailable">
+            <div class="icon_small_size"></div>
+            <p class="subtext">Show only unavailable</p>
+        </div>
+
+        <div class="table_breaker_light"></div>
+
+        <div class="filter_option price">
+            <p class="subtext" style="font-weight: bold;">Price range</p>
+            <p class="subtext">Minimum price (zł)</p>
+            <p class="price_value_min">0</p>
+            <p class="subtext">Maximum price (zł)</p>
+            <p class="price_value_max">0</p>
+            <div class="slider_container">
+                <div class="slider_track slider"></div>
+                <input class="price_value_min_slider slider" type="range" min="0" max="10000" value="0">
+                <input class="price_value_max_slider slider" type="range" min="0" max="10000" value="0">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+

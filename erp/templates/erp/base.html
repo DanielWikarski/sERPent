@@ -1,0 +1,53 @@
+{% load static %}
+<!-- Ładuje folder static, gdzie są css i js -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="{% static 'erp/styles.css' %}">
+    <script src="{% static 'erp/script.js' %}" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- atrybut defer, aby JS załadował się dopiero po wczytaniu strony = szybsze ładowanie -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>sERPent</title>
+</head>
+<body>
+    <div class="header_contener">
+        <div class="header_logo">
+            <a href="{%  url 'dashboard_home' %}"> serpent_logo</a>
+        </div>
+    </div>
+
+    <div class="homepage_dashboard_contener">
+
+        <div class="homepage_dashboard_modules_contener">
+            <!-- kontener z modułami / opcjami po wejściu w moduł -->
+            {% block main_content %}
+            {% endblock %}
+
+        
+        </div>
+
+        <div class="homepage_dashboard_sidebar_contener">
+            <!-- kontener dla pasku bocznego, jako dashboard będzie quick-view na statystki sprzedażowe -->
+            <!-- po wejściu w dany moduł, pasek boczny wyświela aktualny moduł w którym jesteśmy, oraz funkcjonalności-->
+
+            {% block sidebar_content %}
+            {% endblock %}
+        </div>
+
+
+    </div>
+        
+
+    
+
+
+
+
+
+
+
+    
+</body>
+</html>
