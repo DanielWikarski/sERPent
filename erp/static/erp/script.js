@@ -1,7 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
     // argument DOMContentLoaded, żeby skrypt wystartował dopiero po tym jak się załaduje strona //
-    const show_available = document.querySelector(".show_available")
-    const show_unavailable = document.querySelector(".show_unavailable")
     const search_input = document.getElementById("search_input"); 
     const productCards = document.querySelectorAll(".product_card");
     // pobieram potrzebne do wykonania skryptu elementy - input żeby móc wyszukiwać i productCards, żeby wyświetlać tylko to, co wbiłem w input //
@@ -79,6 +77,9 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             product_card_empty.style.display = "none";
         }
+
+
+
     }
 
 
@@ -144,5 +145,93 @@ document.addEventListener('DOMContentLoaded', function () {
 
     price_value_min_slider.addEventListener("input", slider_track_update);
     price_value_max_slider.addEventListener("input", slider_track_update);
+
+
+
+
+    // Zachowanie buttona apply filters, zmiana wyglądu, chowanie / pokazywanie contentu
+    const apply_filters_show = document.querySelector(".filter_icon_show")
+    const apply_filters_hide = document.querySelector(".filter_icon_hide")
+    const filter_search_container_options = document.querySelector(".filter_search_container_options")
+
+
+    apply_filters_show.addEventListener("click", function() {
+        apply_filters_hide.classList.remove("filter_icon_hide")
+        apply_filters_hide.classList.add("filter_icon_show")
+        apply_filters_show.classList.remove("filter_icon_show")
+        apply_filters_show.classList.add("filter_icon_hide")
+        filter_search_container_options.style.display = "none"
+    })
+
+    apply_filters_hide.addEventListener("click", function(){
+        apply_filters_show.classList.remove("filter_icon_hide")
+        apply_filters_show.classList.add("filter_icon_show")
+        apply_filters_hide.classList.remove("filter_icon_show")
+        apply_filters_hide.classList.add("filter_icon_hide")
+        filter_search_container_options.style.display = "block"
+    })
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // Zachowannie buttonów show available, pokazywanie contentu wymaganego
+    const show_available = document.querySelector(".show_available > .icon_small_size")
+    const show_unavailable = document.querySelector(".show_unavailable > .icon_small_size")
+    const show_available_btn = document.querySelector(".show_available")
+    const show_unavailable_btn = document.querySelector(".show_unavailable")
+    show_available.classList.add("filter_icon_show")
+    show_unavailable.classList.add("filter_icon_show")
+
+
+
+
+    show_available_btn.addEventListener("click", function(){
+        show_available.classList.add("filter_icon_show")
+
+
+        productCards.forEach(function(card){
+            const qty = card.querySelector(".product_qty")
+            if (parseFloat(qty.textContent) == 0) {
+                card.style.display = "none"
+            }else{
+                card.style.display = "flex"
+            }
+        })
+
+
+
+
+
+    })
+
+    show_unavailable_btn.addEventListener("click", function(){
+        if (show_unavailable.classList.contains("filter_icon_show")){
+            show_unavailable.classList.remove("filter_icon_show")
+            show_unavailable.classList.add("filter_icon_hide")
+        }else{
+            show_available.classList.add("filter_icon_show")
+        }
+
+        // DOKOŃCZYĆ FUNKCJE FILTROWANIA HIDE/ SHOW!!! 
+
+        productCards.forEach(function(card){
+            const qty = card.querySelector(".product_qty")
+            if (parseFloat(qty.textContent) == 0) {
+                card.style.display = "flex"
+            } else {
+                card.style.display = "none"
+            }
+        })
+    })
+
 
 });

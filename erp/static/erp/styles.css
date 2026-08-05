@@ -57,6 +57,21 @@ p{
     width: 100%;
     height: 1px;
     background-color: var(--text-primary);
+    margin: 10px 0 10px 0;
+}
+
+.row_flex_contener {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    p {
+        font-size: clamp(18px, 0.8vw, 34px);
+    }
+    .icon_standard_size {
+        width: 30px;
+        height: 30px;
+        cursor: pointer;
+    }
 }
 
 .header_contener {
@@ -205,8 +220,28 @@ p{
 .filter_option.price  {
     display: flex;
     flex-direction: column;
-    
+
 }
+
+.filter_option.availability {
+    .icon_small_size {
+        margin: 0;
+        padding: 0;
+    }
+    p {
+        margin-left: 10px;
+    }
+}
+
+
+.apply_filters_btn {
+    cursor: pointer;
+}
+
+.subtext.price_range_title {
+    text-align: left;
+}
+
 
 .price_value_min, .price_value_max {
     margin: 0;
@@ -217,7 +252,7 @@ p{
     position: relative;
     background-color: transparent !important;
     width: 100%;
-    margin-top: 10px;
+    margin: 10px 0 30px 0;
 
         input[type = "range"] {
             -webkit-appearance: none;
