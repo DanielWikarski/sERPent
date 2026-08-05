@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     // argument DOMContentLoaded, żeby skrypt wystartował dopiero po tym jak się załaduje strona //
-
+    const show_available = document.querySelector(".show_available")
+    const show_unavailable = document.querySelector(".show_unavailable")
     const search_input = document.getElementById("search_input"); 
     const productCards = document.querySelectorAll(".product_card");
     // pobieram potrzebne do wykonania skryptu elementy - input żeby móc wyszukiwać i productCards, żeby wyświetlać tylko to, co wbiłem w input //

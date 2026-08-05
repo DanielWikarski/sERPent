@@ -294,7 +294,7 @@ p{
         display: flex;
         align-items: center;
 
-        div {
+        button {
             background-color: var(--text-primary);
             margin-right: 5px;
         }
