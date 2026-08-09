@@ -53,7 +53,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const product_name = card.querySelector(".product_name").textContent.toLowerCase();
             const product_codename = card.querySelector(".product_codename").textContent.toLowerCase();
             const product_ean = card.querySelector(".product_ean").textContent;
-            
+            const qty = card.querySelector(".product_qty")
+
             // parseFloat() -> wbudowana funkcja z JS, która zmienia stringa na floata, w przypadku jak chcemy pobrać dane z elementu to nie mogę użyć tylko textContent, bo stringów nie porównamy i trzeba jest zamienić na liczby
             const item_price = parseFloat(card.querySelector(".product_price").textContent);
 
@@ -64,13 +65,18 @@ document.addEventListener('DOMContentLoaded', function () {
             const matchesPrice = item_price >= minPrice && item_price <= maxPrice;
 
             if (matchesText && matchesPrice) { // jeśli wynik się zgadza, pozycja jest wyświetlona, jeśli nie display none, żeby nie pokazywało wyniku
-                card.style.display = "flex";
-                products_shown++;
+                // filtracja produktów niedostępnych / dostępnych
+                if (show_unavailable.classList.contains("filter_icon_hide") && parseFloat(qty.textContent) == 0){
+                    card.style.display =  "none"
+                } else {
+                    card.style.display = "flex"
+                    products_shown++;
+                }
             } else {
                 card.style.display = "none";
             }
-        });
 
+        });
         const product_card_empty = document.querySelector(".product_card_empty");
         if (products_shown === 0) { // jeśli liczba wyświetlonych produktów po skończeniu pętli wynosi zero, to pokaże się komunikat o braku produktków
             product_card_empty.style.display = "flex";
@@ -150,8 +156,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     // Zachowanie buttona apply filters, zmiana wyglądu, chowanie / pokazywanie contentu
-    const apply_filters_show = document.querySelector(".filter_icon_show")
-    const apply_filters_hide = document.querySelector(".filter_icon_hide")
+    const apply_filters_show = document.querySelector(".apply_filters_btn.active")
+    const apply_filters_hide = document.querySelector(".apply_filters_btn.inactive")
     const filter_search_container_options = document.querySelector(".filter_search_container_options")
 
 
@@ -172,66 +178,36 @@ document.addEventListener('DOMContentLoaded', function () {
     })
 
 
-
-
-
-
-
-
-
-
-
-
-
-    // Zachowannie buttonów show available, pokazywanie contentu wymaganego
-    const show_available = document.querySelector(".show_available > .icon_small_size")
+    // Flagowanie show unavailable, logika jest w funkcji głównej filter_products()
     const show_unavailable = document.querySelector(".show_unavailable > .icon_small_size")
-    const show_available_btn = document.querySelector(".show_available")
     const show_unavailable_btn = document.querySelector(".show_unavailable")
-    show_available.classList.add("filter_icon_show")
     show_unavailable.classList.add("filter_icon_show")
-
-
-
-
-    show_available_btn.addEventListener("click", function(){
-        show_available.classList.add("filter_icon_show")
-
-
-        productCards.forEach(function(card){
-            const qty = card.querySelector(".product_qty")
-            if (parseFloat(qty.textContent) == 0) {
-                card.style.display = "none"
-            }else{
-                card.style.display = "flex"
-            }
-        })
-
-
-
-
-
-    })
 
     show_unavailable_btn.addEventListener("click", function(){
         if (show_unavailable.classList.contains("filter_icon_show")){
             show_unavailable.classList.remove("filter_icon_show")
             show_unavailable.classList.add("filter_icon_hide")
-        }else{
-            show_available.classList.add("filter_icon_show")
+            filter_products()
+        }else {
+            show_unavailable.classList.remove("filter_icon_hide")
+            show_unavailable.classList.add("filter_icon_show")
+            filter_products()
         }
-
-        // DOKOŃCZYĆ FUNKCJE FILTROWANIA HIDE/ SHOW!!! 
-
-        productCards.forEach(function(card){
-            const qty = card.querySelector(".product_qty")
-            if (parseFloat(qty.textContent) == 0) {
-                card.style.display = "flex"
-            } else {
-                card.style.display = "none"
-            }
-        })
     })
 
+
+
+
+    // Interakcja z kartą produktu w sell products, dodawanie produktu do koszyka i obsługa wyświetlania koszyka w karcie obok w basket summary
+
+    function choose_item(item){
+        
+    }
+
+    // Dodanie listenera na każdą kartę produktu, aby po kliknięciu na nią móc wywołać funkcję
+    productCards.forEach(function(card){
+        card.addEventListener("click", choose_item(card))
+    })
+    
 
 });

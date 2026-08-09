@@ -10,3 +10,7 @@ def dashboard_home(request):
 def warehouse_modules(request):
     return render(request, 'erp/warehouse_modules.html', {'warehouse_products': Product.objects.all()}) 
 # ostatni atrybut rendera to pobieranie wszystkich obiektów stworzonych przeez klasę Product
+
+def sales_modules(request):
+    return render(request, 'erp/sales_modules.html', {'warehouse_products': Product.objects.all()}) 
+# moduł sprzedażowy
