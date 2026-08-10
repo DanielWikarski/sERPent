@@ -200,14 +200,154 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Interakcja z kartą produktu w sell products, dodawanie produktu do koszyka i obsługa wyświetlania koszyka w karcie obok w basket summary
 
-    function choose_item(item){
+
+    const basketContainer = document.querySelector(".basket_summary");
+    const emptyBasketMsg = document.querySelector(".empty_basket");
+    const totalAmountText = document.querySelector(".total_amount");
+
+    // Obiekt przechowujący produkty w koszyku (klucz to SKU, bo nawet jak będzie ta  sama nazwa to SKU jest dosyć unikalny dla każdego produktu)
+    let basket = {};
+    // nadanie listenera na każdą pozycje z magazynie, żeby można było kliknąć i dodać to do koszyka
+    productCards.forEach(function(card) {
+        card.addEventListener("click", function() {
+            choose_item(card);
+        });
+    });
+
+    // zachowanie po kliknięciu na dany produkt, czyli wrzucenie go do koszyka po prawej stronie
+    function choose_item(card) {
+        const name = card.querySelector(".product_name").textContent;
+        const sku = card.querySelector(".product_codename").textContent;
+        const price = parseFloat(card.querySelector(".product_price").textContent);
+        const qtyElement = card.querySelector(".product_qty");
+        let currentStock = parseFloat(qtyElement.textContent);
+
+        // Sprawdzenie czy produkt jest dostępny w magazynie
+        if (currentStock <= 0) {
+            alert("Choosen product is not available!");
+            return;
+        }
+
+        // Zdejmowanie sztyki produktu z magazynu (wizualnie - faktyczne zdejmowanie będzie poprzez django data base potem)
+        currentStock--;
+        qtyElement.textContent = currentStock;
+
+        // Jeśli produkt jest już w koszyku, zwiększamy ilość, jeśli nie - dodajemy
+        if (basket[sku]) {
+            basket[sku].qty++;
+        } else {
+            basket[sku] = {
+                name: name,
+                price: price,
+                qty: 1,
+                maxStock: currentStock + 1 
+                // zapamiętujemy pierwotny stan w razie resetu
+            };
+        }
+
+        // Po zmianie stanu magazynowego, odpala się filtracja, jakby coś już było wpisane
+        filter_products();
         
+        // Render koszyka
+        render_basket();
     }
 
-    // Dodanie listenera na każdą kartę produktu, aby po kliknięciu na nią móc wywołać funkcję
-    productCards.forEach(function(card){
-        card.addEventListener("click", choose_item(card))
-    })
+
+    // funkcja odpowiadająca za pojawianie się kolejnych itemów w koszyku
+    function render_basket() {
+        const oldItems = basketContainer.querySelectorAll(".add_product_window");
+        oldItems.forEach(item => item.remove());
+
+        const skuArray = Object.keys(basket);
+
+        if (skuArray.length === 0) {
+            emptyBasketMsg.style.display = "block";
+            totalAmountText.textContent = "total: 0.00zł";
+            return;
+        }
+
+        emptyBasketMsg.style.display = "none";
+        let total = 0;
+
+        skuArray.forEach(sku => {
+            const item = basket[sku];
+            const itemTotal = item.price * item.qty;
+            total += itemTotal;
+            const productWindow = document.createElement("div");
+            productWindow.className = "add_product_window";
+            // render koszyka, wstrzykuje do html pozycje do koszyka
+            productWindow.innerHTML = `
+                <div class="add_product_item_name">
+                    <p>${item.name}</p>
+                </div>
+                <div class="add_product_item_qty">
+                    <input type="number" class="subtext qty_amount" value="${item.qty}" min="1" data-sku="${sku}">
+                    <p class="subtext">Qty.</p>
+                </div>
+                <div class="add_product_item_price" style="display: flex; align-items: center; gap: 10px;">
+                    <p class="price_amount">${itemTotal.toFixed(2)}zł</p>
+                    <button class="remove_product_btn" style="background: none; border: none; color: #ff4d4d; cursor: pointer; font-weight: bold; padding: 0 5px;">✕</button>
+                </div>
+            `;
+            const totalWindow = basketContainer.querySelector(".total_window");
+            basketContainer.insertBefore(productWindow, totalWindow);
+            // Obsługa ręcznej zmiany ilości, jak klikniemy z liczbę, to można ręcznie sobie zmienić
+            const qtyInput = productWindow.querySelector(".qty_amount");
+            qtyInput.addEventListener("change", function(e) {
+                update_basket_qty(sku, parseInt(e.target.value));
+            });
+
+            // Usuwanie produktu z koszyka
+            const removeBtn = productWindow.querySelector(".remove_product_btn");
+            removeBtn.addEventListener("click", function() {
+                remove_from_basket(sku);
+            });
+        });
+
+        totalAmountText.textContent = `total: ${total.toFixed(2)}zł`;
+    }
+    // funkcja odpowiadająca za usuwanie z koszyka
+    function remove_from_basket(sku) {
+        const item = basket[sku];
+        if (item) {
+            const card = Array.from(productCards).find(c => c.querySelector(".product_codename").textContent === sku);
+            
+            if (card) {
+                const qtyElement = card.querySelector(".product_qty");
+                qtyElement.textContent = item.maxStock;
+            }
+            delete basket[sku];
+            
+
+            filter_products();
+            render_basket();
+        }
+    }
+    function update_basket_qty(sku, newQty) {
+        const item = basket[sku];
+        const card = Array.from(productCards).find(c => c.querySelector(".product_codename").textContent === sku);
+        const qtyElement = card.querySelector(".product_qty");
+        
+        if (!newQty || newQty <= 0) {
+            qtyElement.textContent = item.maxStock;
+            delete basket[sku];
+        } else {
+            const diff = newQty - item.qty;
+            const currentStock = parseInt(qtyElement.textContent);
+            if (diff > currentStock) {
+                alert("Brak wystarczającej ilości w magazynie!");
+                render_basket(); 
+                return;
+            }
+            qtyElement.textContent = currentStock - diff;
+            item.qty = newQty;
+        }
+
+
+
+        filter_products();
+        render_basket();
+    }
     
 
 });
