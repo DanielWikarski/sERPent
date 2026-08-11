@@ -1,0 +1,104 @@
+{% extends 'erp/base.html' %}
+
+{% block main_content %}
+<div class="product_card_contener" style="padding: 20px;">
+    <p class="sidebar_title" style="margin-bottom: 20px;">Basket summary</p>
+    
+    <div class="sorting_table">
+        <p>Product name</p><p>Product code (SKU)</p><p>Price (netto)</p><p>Quantity</p><p style="border: none;">Total price</p>
+    </div>
+
+    <div id="checkout_items_list"></div>
+</div>
+{% endblock %}
+
+{% block sidebar_content %}
+<div class="sidebar_card" style="display: flex; flex-direction: column; height: 100%;">
+    <p class="sidebar_title">Order finalisation</p>
+    <div class="table_breaker_light"></div>
+    
+    <div class="payment_section" style="margin-top: 20px; flex-grow: 1;">
+        <p class="subtext" style="font-weight: bold; margin-bottom: 15px;">Choose payment method</p>
+        
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            <label style="color: white; cursor: pointer; font-size: 16px; display: flex; align-items: center;">
+                <input type="radio" name="payment_method" value="cash" checked style="margin-right: 10px; transform: scale(1.2);"> Cash
+            </label>
+            <label style="color: white; cursor: pointer; font-size: 16px; display: flex; align-items: center;">
+                <input type="radio" name="payment_method" value="card" style="margin-right: 10px; transform: scale(1.2);"> Card
+            </label>
+        </div>
+    </div>
+
+    <div class="total_window" style="margin-top: auto; padding-top: 15px;">
+        <div class="table_breaker_light"></div>
+        <p class="total_amount" id="checkout_total_text">total: 0.00zł</p>
+        
+        <button id="final_pay_btn" style="width: 100%; margin-top: 15px; padding: 15px; background: #28a745; border: none; color: white; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 18px; text-transform: uppercase;">
+            Accept payment and finalise transaction 
+        </button>
+    </div>
+</div>
+
+<!--  Tutaj użyłem skryptu poprzez HTML, bo użyje go tylko tutaj. Nie będzie to zaśmiecało JS i przy każdym  odpaleniu innej strony nie będzie szukać
+  elementów stąd0 -->
+  <!-- Drugi powód - w pliku  JS nie mogę wstawić taga z Django, temu w HTMl jest to lepsze. A Django będzie tu potrzebne, żeby wysłać
+   do Django info, że z magazynu zeszła sztuka po sprzedaży i dodać do salda kwotę -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const itemsListContainer = document.getElementById("checkout_items_list");
+    const totalText = document.getElementById("checkout_total_text");
+    const payBtn = document.getElementById("final_pay_btn");
+
+    if (!itemsListContainer) return;
+
+    // Pobieramy dane zapisane w localStorage przed przejściem na stronę
+    const savedBasket = localStorage.getItem('active_basket');
+    if (!savedBasket) {
+        alert("Basket is empty!");
+        window.location.href = '/'; 
+        return;
+    }
+
+    const checkoutBasket = JSON.parse(savedBasket);
+    let total = 0;
+    Object.keys(checkoutBasket).forEach(sku => {
+        const item = checkoutBasket[sku];
+        const itemTotal = item.price * item.qty;
+        total += itemTotal;
+
+        const row = document.createElement("div");
+        row.className = "product_card";
+        row.innerHTML = `
+            <p class="product_name">${item.name}</p>
+            <p class="product_codename">${sku}</p>
+            <p class="product_price">${item.price.toFixed(2)} zł</p>
+            <p class="product_qty">${item.qty}</p>
+            <p style="border: none;">${itemTotal.toFixed(2)} zł</p>
+        `;
+        itemsListContainer.appendChild(row);
+    });
+    totalText.textContent = `total: ${total.toFixed(2)}zł`;
+    payBtn.addEventListener("click", function() {
+        const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+
+        fetch('/api/sale/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ basket: checkoutBasket, payment_method: paymentMethod })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`Transaction completed succesfully!`);
+                localStorage.removeItem('active_basket');
+                window.location.href = '/'; 
+            } else {
+                alert("Server Error: " + data.error);
+            }
+        })
+        .catch(err => console.error("Connection Error:", err));
+    });
+});
+</script>
+{% endblock %}

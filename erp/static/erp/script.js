@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     // Flagowanie show unavailable, logika jest w funkcji głównej filter_products()
-    const show_unavailable = document.querySelector(".show_unavailable > .icon_small_size")
+    const show_unavailable = document.querySelector(".show_unavailable > svg")
     const show_unavailable_btn = document.querySelector(".show_unavailable")
     show_unavailable.classList.add("filter_icon_show")
 
@@ -196,6 +196,57 @@ document.addEventListener('DOMContentLoaded', function () {
     })
 
 
+    // Import do Excela aktualnie pokazanych produktów biorąc pod uwagę filtry
+
+    const exportWarehouseBtn = document.getElementById("export_warehouse_btn");
+    if (exportWarehouseBtn) {
+        // sprawdzamy czy przycisk jest  na ekranie, jeśli tak do dodajemy do niego listenera
+        exportWarehouseBtn.addEventListener("click", function () {
+            // Filtrujemy tylko te, które są aktualnie widoczne dla użytkownika
+            const visibleCards = Array.from(productCards).filter(card => {
+                // robimy listę widocznych produktów
+                // zwraca jeśli produkt nie ma display "none" i czy realnie jest pokazany (NOWOŚĆ!! getComputedStyle)
+                return card.style.display !== "none" && window.getComputedStyle(card).display !== "none";
+            });
+
+            if (visibleCards.length === 0) {
+                alert("No products found to export based on current filters.");
+                return;
+            }
+            // nagłówki dla piku csv
+            let csvContent = "Product Name;SKU (Code);Price (Netto);Availability (Qty);EAN Code\n";
+            // Usuwanie niepotrzebnych odstępów etc.
+            visibleCards.forEach(card => {
+                const name = card.querySelector(".product_name")?.textContent.trim() || "";
+                const sku = card.querySelector(".product_codename")?.textContent.trim() || "";
+                const price = card.querySelector(".product_price")?.textContent.trim() || "";
+                const qty = card.querySelector(".product_qty")?.textContent.trim() || "";
+                const ean = card.querySelector(".product_ean")?.textContent.trim() || "";
+
+                // robimy wiersz ze średnikami, tak jak wygląda struktura csv
+                csvContent += `"${name}";"${sku}";"${price}";"${qty}";"${ean}"\n`;
+            });
+            // (NOWE!! BOM (Byte Order Mark) powoduje, że wyświetlanie jest wgl standardu UTF-8, czyli z Polskimi znakami)
+            const BOM = "\uFEFF";
+            // (NOWE!!! blob (Binary Large Object)
+            // syntax new Blob([opcjonalny argument na Polski znaków + co ma być przekazywane], {type: "typDanych/rozszerzenie;charset=utf-8; Tutaj znów
+            // deklaracja typu UTF-8" ale to dla przeglądarek, BOM jest tylko dla Excela, żeby odpowiednio traktował tekst })
+            const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
+            // Żeby pobrać potrzebny jest  odnośnik, tutaj robimy fake url który będzie działać lokalnie
+            const url = URL.createObjectURL(blob); 
+
+
+            // generowanie dokumentu i nadawanie nazwy (względem dzisiejszej daty)
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `warehouse_stock_${new Date().toISOString().slice(0, 10)}.csv`);
+            link.style.visibility = "hidden";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    }
+
 
 
     // Interakcja z kartą produktu w sell products, dodawanie produktu do koszyka i obsługa wyświetlania koszyka w karcie obok w basket summary
@@ -207,6 +258,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Obiekt przechowujący produkty w koszyku (klucz to SKU, bo nawet jak będzie ta  sama nazwa to SKU jest dosyć unikalny dla każdego produktu)
     let basket = {};
+    // basket zawiera słownik gdzie są ceny, nazwa produktu, ile produktu dodaliśmy do  koszyka i stan ile było na magazynie przez kliknięciem
+    // użyłem let zamiast  const, bo basket jest zmienny, a nie  stały.
+
     // nadanie listenera na każdą pozycje z magazynie, żeby można było kliknąć i dodać to do koszyka
     productCards.forEach(function(card) {
         card.addEventListener("click", function() {
@@ -216,20 +270,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // zachowanie po kliknięciu na dany produkt, czyli wrzucenie go do koszyka po prawej stronie
     function choose_item(card) {
+        // pobieram dane z produktu z magazynu, co kliknął user
         const name = card.querySelector(".product_name").textContent;
         const sku = card.querySelector(".product_codename").textContent;
         const price = parseFloat(card.querySelector(".product_price").textContent);
         const qtyElement = card.querySelector(".product_qty");
         let currentStock = parseFloat(qtyElement.textContent);
 
-        // Sprawdzenie czy produkt jest dostępny w magazynie
+        // Sprawdzenie czy produkt jest dostępny w magazynie, jeśli nie to podnoszę bład
         if (currentStock <= 0) {
             alert("Choosen product is not available!");
             return;
         }
 
-        // Zdejmowanie sztyki produktu z magazynu (wizualnie - faktyczne zdejmowanie będzie poprzez django data base potem)
+        // Zdejmowanie sztuki produktu z magazynu (wizualnie - faktyczne zdejmowanie będzie poprzez django data base potem)
         currentStock--;
+        // odejmuje i wizualnie zmmienam bezpośrednio na elemencie w html
         qtyElement.textContent = currentStock;
 
         // Jeśli produkt jest już w koszyku, zwiększamy ilość, jeśli nie - dodajemy
@@ -255,20 +311,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // funkcja odpowiadająca za pojawianie się kolejnych itemów w koszyku
     function render_basket() {
-        const oldItems = basketContainer.querySelectorAll(".add_product_window");
+        // przy każdym dodaniu od początku renderujemy koszyk, czyli usuwamy to co jest i renderujemym go na nowo na podstawie danych ze zmiennej basket (słownika)
+        const oldItems = basketContainer.querySelectorAll(".basket_products_list .add_product_window");
         oldItems.forEach(item => item.remove());
 
         const skuArray = Object.keys(basket);
+        // jako, że nie można odpalić iteracji na basket, to robie array, wrzucam tam same klucze, czyli SKU w tym przypadku
 
+        const proceed_to_checkout_btn = document.querySelector(".proceed_to_checkout_btn")
+        // jeśli nie ma nic w koszyku to ikonka to przejścia dalej jest nieaktywna
+        // jeśli lista jest pusta  to pokazuje komunikat, że koszyk jest pusty
         if (skuArray.length === 0) {
+            proceed_to_checkout_btn.style.opacity = "0.5";
+            proceed_to_checkout_btn.style.pointerEvents = "none";
             emptyBasketMsg.style.display = "block";
             totalAmountText.textContent = "total: 0.00zł";
+
             return;
         }
-
+        proceed_to_checkout_btn.style.pointerEvents = "all";
+        proceed_to_checkout_btn.style.opacity = "1";
+        proceed_to_checkout_btn.style.cursor = "pointer";
         emptyBasketMsg.style.display = "none";
-        let total = 0;
+        let total = 0; 
 
+        // iteruje forEach poprzez listę, i dla każdej iteracji  wyciągam na podstawie klucza dane ze słownika basket
+        // na tej postawie tworzę obiekt w html z danymi ze słownika
         skuArray.forEach(sku => {
             const item = basket[sku];
             const itemTotal = item.price * item.qty;
@@ -289,8 +357,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     <button class="remove_product_btn" style="background: none; border: none; color: #ff4d4d; cursor: pointer; font-weight: bold; padding: 0 5px;">✕</button>
                 </div>
             `;
-            const totalWindow = basketContainer.querySelector(".total_window");
-            basketContainer.insertBefore(productWindow, totalWindow);
+            
+            const productsList = basketContainer.querySelector(".basket_products_list");
+            productsList.appendChild(productWindow);
             // Obsługa ręcznej zmiany ilości, jak klikniemy z liczbę, to można ręcznie sobie zmienić
             const qtyInput = productWindow.querySelector(".qty_amount");
             qtyInput.addEventListener("change", function(e) {
@@ -349,5 +418,22 @@ document.addEventListener('DOMContentLoaded', function () {
         render_basket();
     }
     
+    const proceed_to_checkout_btn = document.querySelector(".proceed_to_checkout_btn");
+    if (proceed_to_checkout_btn) {
+        proceed_to_checkout_btn.addEventListener("click", function() {
+            const skuArray = Object.keys(basket);
+            // Zapisujemy koszyk w pamięci podręcznej przeglądarki
+            // NOWE!! localStorage pozwala nam zatrzymać dany obiekt w pamięci przeglądarki, nawet po refreshu tam będzie
+            // syntax localStorage.setItem("nazwa szufladki gdzie wrzucimy dane", dane które chcemy zatrzymać. (jako, że nie można przekazać
+            // słownika basket to zamieniamy go na czysty tekst JSON))
+            localStorage.setItem('active_basket', JSON.stringify(basket));
+            
+            // Przenosimy użytkownika na adres url gdzie będzie podsumowanie i płatność
+            window.location.href = '/sales_modules_checkout/'; 
+        });
+    }
+
+
+
 
 });

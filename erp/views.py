@@ -14,3 +14,6 @@ def warehouse_modules(request):
 def sales_modules(request):
     return render(request, 'erp/sales_modules.html', {'warehouse_products': Product.objects.all()}) 
 # moduł sprzedażowy
+
+def sales_modules_checkout(request):
+    return render(request, 'erp/sales_modules_checkout.html') 
