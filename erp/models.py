@@ -9,3 +9,5 @@ class Product(models.Model):
     product_code_sku = (models.CharField(max_length=50, unique=True)) # kod SKU, zmodyfikowana nazwa produktu, ułatwia ona tracking produktu, format: RAZER-ORNATA-KEY-BLACK czyli MARKA-MODEL-TYP-KOLOR (w tym przypadku klawiatura razer model ornata w kolorze czarnym), maks liczba znaków to 50
     product_ean = models.CharField(max_length=13) # kod ean, max 13 znaków
 
+class Balance(models.Model):
+    account_balance = models.DecimalField(max_digits=10, decimal_places=2)

@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const product_prices_min_value = Math.min(...products_prices_list);
 
     // ustawiam dla suwaka atrybuty tj. max range, min range i wartości początkowe
+    if  (price_value_min_slider && price_value_max_slider){
     price_value_min_slider.min = product_prices_min_value;
     price_value_max_slider.min = product_prices_min_value;
 
@@ -33,6 +34,10 @@ document.addEventListener('DOMContentLoaded', function () {
     price_value_min_slider.value = product_prices_min_value;
     price_value_min.textContent = product_prices_min_value;
     price_value_max.textContent = product_prices_max_value;
+    }
+    
+
+
 
     const slider_track = document.querySelector(".slider_track"); // slider na którym są suwaki, część, którą zaznaczymy będzie podświetlona, reszta opacity 0.7, żeby było widać 
     // wizualnie jaki range mamy wzięty
@@ -148,10 +153,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         filter_products();
     }
-
+    if  (price_value_min_slider && price_value_max_slider){
     price_value_min_slider.addEventListener("input", slider_track_update);
     price_value_max_slider.addEventListener("input", slider_track_update);
-
+    }
 
 
 
@@ -160,8 +165,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const apply_filters_hide = document.querySelector(".apply_filters_btn.inactive")
     const filter_search_container_options = document.querySelector(".filter_search_container_options")
 
-
-    apply_filters_show.addEventListener("click", function() {
+    if(apply_filters_hide && apply_filters_show){
+        apply_filters_show.addEventListener("click", function() {
         apply_filters_hide.classList.remove("filter_icon_hide")
         apply_filters_hide.classList.add("filter_icon_show")
         apply_filters_show.classList.remove("filter_icon_show")
@@ -176,12 +181,16 @@ document.addEventListener('DOMContentLoaded', function () {
         apply_filters_hide.classList.add("filter_icon_hide")
         filter_search_container_options.style.display = "block"
     })
+    }
+    
 
 
     // Flagowanie show unavailable, logika jest w funkcji głównej filter_products()
     const show_unavailable = document.querySelector(".show_unavailable > svg")
     const show_unavailable_btn = document.querySelector(".show_unavailable")
-    show_unavailable.classList.add("filter_icon_show")
+
+    if (show_unavailable_btn){
+        show_unavailable.classList.add("filter_icon_show")
 
     show_unavailable_btn.addEventListener("click", function(){
         if (show_unavailable.classList.contains("filter_icon_show")){
@@ -194,6 +203,8 @@ document.addEventListener('DOMContentLoaded', function () {
             filter_products()
         }
     })
+    }
+    
 
 
     // Import do Excela aktualnie pokazanych produktów biorąc pod uwagę filtry
@@ -404,7 +415,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const diff = newQty - item.qty;
             const currentStock = parseInt(qtyElement.textContent);
             if (diff > currentStock) {
-                alert("Brak wystarczającej ilości w magazynie!");
+                alert("Product is out of stock!");
                 render_basket(); 
                 return;
             }

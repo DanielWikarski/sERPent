@@ -1,104 +1,126 @@
 {% extends 'erp/base.html' %}
-
 {% block main_content %}
-<div class="product_card_contener" style="padding: 20px;">
-    <p class="sidebar_title" style="margin-bottom: 20px;">Basket summary</p>
-    
-    <div class="sorting_table">
-        <p>Product name</p><p>Product code (SKU)</p><p>Price (netto)</p><p>Quantity</p><p style="border: none;">Total price</p>
-    </div>
-
-    <div id="checkout_items_list"></div>
+{% csrf_token %}
+<!-- {% csrf_token %} jest potrzebne dla Django, aby wykonać metody POST, PUT i DELETE. Zamieszczenie takiego tokena to takie zabezpieczenie -->
+<div class="basket_summary_container">
+    <p class="basket_summary_header">Basket summary</p>
+    <div class="basket_summary">
 </div>
+</div>
+
 {% endblock %}
 
 {% block sidebar_content %}
-<div class="sidebar_card" style="display: flex; flex-direction: column; height: 100%;">
+<div class="sidebar_card">
     <p class="sidebar_title">Order finalisation</p>
     <div class="table_breaker_light"></div>
     
-    <div class="payment_section" style="margin-top: 20px; flex-grow: 1;">
-        <p class="subtext" style="font-weight: bold; margin-bottom: 15px;">Choose payment method</p>
+    <div class="payment_section" >
+        <p class="subtext">Choose payment method</p>
         
-        <div style="display: flex; flex-direction: column; gap: 15px;">
-            <label style="color: white; cursor: pointer; font-size: 16px; display: flex; align-items: center;">
-                <input type="radio" name="payment_method" value="cash" checked style="margin-right: 10px; transform: scale(1.2);"> Cash
-            </label>
-            <label style="color: white; cursor: pointer; font-size: 16px; display: flex; align-items: center;">
-                <input type="radio" name="payment_method" value="card" style="margin-right: 10px; transform: scale(1.2);"> Card
-            </label>
+        <div class="payment_selection_choice">
+            <label for="card"><p>Card</p></label>
+            <input type="radio" name="payment_method" id="card" value="card">
+        </div>
+        <div class="payment_selection_choice">
+            <label for="cash" class="subtext"><p>Cash</p></label>
+            <input type="radio" name="payment_method" id="cash" checked value="cash">
         </div>
     </div>
 
-    <div class="total_window" style="margin-top: auto; padding-top: 15px;">
+    <div class="total_window">
         <div class="table_breaker_light"></div>
         <p class="total_amount" id="checkout_total_text">total: 0.00zł</p>
         
-        <button id="final_pay_btn" style="width: 100%; margin-top: 15px; padding: 15px; background: #28a745; border: none; color: white; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 18px; text-transform: uppercase;">
-            Accept payment and finalise transaction 
+        <button id="final_pay_btn" >
+            <p>Accept payment and finalise transaction </p>
         </button>
     </div>
 </div>
 
-<!--  Tutaj użyłem skryptu poprzez HTML, bo użyje go tylko tutaj. Nie będzie to zaśmiecało JS i przy każdym  odpaleniu innej strony nie będzie szukać
-  elementów stąd0 -->
-  <!-- Drugi powód - w pliku  JS nie mogę wstawić taga z Django, temu w HTMl jest to lepsze. A Django będzie tu potrzebne, żeby wysłać
-   do Django info, że z magazynu zeszła sztuka po sprzedaży i dodać do salda kwotę -->
+
+<!-- Skrypt odpowiadający za wyświetlanie koszyka-->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const itemsListContainer = document.getElementById("checkout_items_list");
-    const totalText = document.getElementById("checkout_total_text");
-    const payBtn = document.getElementById("final_pay_btn");
+    const savedBasketText = localStorage.getItem('active_basket');
+    // Tutaj przechwytuje zapisany koszyk z poprzedniej karty, który zapisałem w localeStorage
 
-    if (!itemsListContainer) return;
+    // Zamieniam tekst przekazany z poprzedniem karty na obiekt JSON, aby móc po nim iterować
+    const basket = JSON.parse(savedBasketText);
+    const total_amount = document.querySelector(".total_amount")
+    let total_amount_value = 0
+    // Iteruje przez obiekt basket i dla każdego elementu tworzę okno produktu dodanego do koszyka
+    Object.values(basket).forEach(product => {
+        // produkty będą dodawane do pustego diva na górze basket_item_list
+        const basket_summary = document.querySelector(".basket_summary")
+        // render diva, dodanie do niego dane o produkcie z koszyka
+        const productWindow = document.createElement("div");
+        productWindow.className = "add_product_window";
+        productWindow.innerHTML = `
+        <div class="add_product_item_name">
+            <p>${product["name"]}</p>
+        </div>
 
-    // Pobieramy dane zapisane w localStorage przed przejściem na stronę
-    const savedBasket = localStorage.getItem('active_basket');
-    if (!savedBasket) {
-        alert("Basket is empty!");
-        window.location.href = '/'; 
-        return;
-    }
+        <div class ="add_product_item_qty">
+            <p>${product["qty"]}Qty.</p>
+        </div>
 
-    const checkoutBasket = JSON.parse(savedBasket);
-    let total = 0;
-    Object.keys(checkoutBasket).forEach(sku => {
-        const item = checkoutBasket[sku];
-        const itemTotal = item.price * item.qty;
-        total += itemTotal;
-
-        const row = document.createElement("div");
-        row.className = "product_card";
-        row.innerHTML = `
-            <p class="product_name">${item.name}</p>
-            <p class="product_codename">${sku}</p>
-            <p class="product_price">${item.price.toFixed(2)} zł</p>
-            <p class="product_qty">${item.qty}</p>
-            <p style="border: none;">${itemTotal.toFixed(2)} zł</p>
-        `;
-        itemsListContainer.appendChild(row);
+        <div class="add_product_item_price">
+            <p class="price_amount">${product["price"].toFixed(2)}zł</p>
+        </div>
+        <div class="table_breaker_light"></div>
+        `
+        total_amount_value += parseFloat(product["price"].toFixed(2))
+        basket_summary.appendChild(productWindow)
+        total_amount.innerHTML = parseFloat(total_amount_value).toFixed(2)
     });
-    totalText.textContent = `total: ${total.toFixed(2)}zł`;
-    payBtn.addEventListener("click", function() {
-        const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+});
 
-        fetch('/api/sale/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ basket: checkoutBasket, payment_method: paymentMethod })
+
+// Obsługa przycisku finalise, zdejmuje ze stanu produkty i dodaje do salda kwotę transakcji
+const total_amount = document.querySelector(".total_amount")
+document.getElementById('final_pay_btn').addEventListener('click', function() {
+    const savedBasketText = localStorage.getItem('active_basket');
+    // pobieram dane z koszyka z localStorage
+    // pobieram token dla Django, a dokładnie element {% csrf_token %}
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    // Zamieniam koszyk na obiekt
+    const basket = JSON.parse(savedBasketText);
+    
+    //Pobieram opcje płatności jaką zaznaczył user
+    const selectedPayment = document.querySelector('input[name="payment_method"]:checked').value;
+    let total_amount_value = total_amount.textContent
+    total_amount_value = parseFloat(total_amount_value).toFixed(2)
+
+    // Wysyłamy do Django dane, które pobraliśmy
+    fetch("/finalize_transaction/", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({
+            basket: basket,
+            payment_method: selectedPayment,
+            total_amount: total_amount_value
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert(`Transaction completed succesfully!`);
-                localStorage.removeItem('active_basket');
-                window.location.href = '/'; 
-            } else {
-                alert("Server Error: " + data.error);
-            }
-        })
-        .catch(err => console.error("Connection Error:", err));
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            console.info("SUCCESS");
+            localStorage.removeItem('active_basket'); 
+            // Czyścimy koszyk, żeby po transakcji się nie zapisywał
+            window.location.href = '/';
+            // lecimy na stronę główną jak się uda wszystko
+        } else {
+            console.error("Error:" + data.message);
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
     });
 });
 </script>
 {% endblock %}
+
