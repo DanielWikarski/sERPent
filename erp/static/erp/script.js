@@ -281,6 +281,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // zachowanie po kliknięciu na dany produkt, czyli wrzucenie go do koszyka po prawej stronie
     function choose_item(card) {
+        
         // pobieram dane z produktu z magazynu, co kliknął user
         const name = card.querySelector(".product_name").textContent;
         const sku = card.querySelector(".product_codename").textContent;
@@ -448,3 +449,72 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 });
+
+
+// Wyszukiwarka Live dla dodawania produktów, jak user wpisze dany fragment w polu name, ean, sku
+// Zamiast pisać wszystko od początku w dodaniu produktów, user może wybrać z listy już istniejących
+// Potem to formatki podstawi się cała reszta
+
+const add_new_product_window_product_name = document.querySelector(".add_new_product_window_product_name > label > input")
+const add_new_product_window_product_code_sku = document.querySelector(".add_new_product_window_product_code_sku > label > input")
+const add_new_product_window_product_ean = document.querySelector(".add_new_product_window_product_ean > label > input")
+const add_new_product_window_product_price = document.querySelector(".add_new_product_window_product_price > label > input")
+const productCards = document.querySelectorAll(".product_card");
+
+function add_product_sortByx(add_new_product_window_product, product_sortBy) {
+    if (!add_new_product_window_product) return;
+
+    add_new_product_window_product.addEventListener("input", function() {
+        let input_value = add_new_product_window_product.value.toLowerCase().trim();
+
+        productCards.forEach(function(card) {
+            const targetElement = card.querySelector(product_sortBy);
+            if (!targetElement) return;
+            const parentContainer = card.closest('.product_card_add_product_search');
+            if (!parentContainer) return;
+            const product_sortByx = targetElement.textContent.toLowerCase(); 
+            if (product_sortByx.includes(input_value) && input_value.length > 0) {
+                parentContainer.style.display = "block"; 
+            } else {
+                parentContainer.style.display = "none";
+            }
+        });
+    });
+}
+
+add_product_sortByx(add_new_product_window_product_name, ".product_name");
+add_product_sortByx(add_new_product_window_product_code_sku, ".product_codename");
+add_product_sortByx(add_new_product_window_product_ean, ".product_ean");
+
+
+document.querySelectorAll('.chose_existing_one_btn').forEach(button => {
+    button.addEventListener('click', (e) => {
+        const parentCard = e.currentTarget.closest('.product_card_add_product_search');
+        if (!parentCard) return;
+        const name = parentCard.querySelector('.product_name')?.textContent.trim() || '';
+        const sku = parentCard.querySelector('.product_codename')?.textContent.trim() || '';
+        const price = parentCard.querySelector('.product_price')?.textContent.trim() || '';
+        const ean = parentCard.querySelector('.product_ean')?.textContent.trim() || '';
+        if (add_new_product_window_product_name) add_new_product_window_product_name.value = name;
+        if (add_new_product_window_product_code_sku) add_new_product_window_product_code_sku.value = sku;
+        if (add_new_product_window_product_price) add_new_product_window_product_price.value = parseFloat(price) || '';
+        if (add_new_product_window_product_ean) add_new_product_window_product_ean.value = ean;
+    });
+});
+
+// Zachowanie buttona reset, po wciśnięciu live search się ukrywa, a formularz jest  zresetowany
+const add_new_product_window_reset_form_btn = document.querySelector(".add_new_product_window_reset_form_btn")
+
+add_new_product_window_reset_form_btn.addEventListener("click", function() {
+    add_new_product_window_product_name.value = "";
+    add_new_product_window_product_ean.value = "";
+    add_new_product_window_product_code_sku.value = "";
+    add_new_product_window_product_price.value = "";
+    add_new_product_window_product_name.dispatchEvent(new Event("input"));
+});
+
+const add_new_product_window_save_btn = document.querySelector(".add_new_product_window_save_btn")
+
+add_new_product_window_save_btn.addEventListener("click", function() {
+    alert("Product has been succesfuly saved in warehouse stock!")
+})
