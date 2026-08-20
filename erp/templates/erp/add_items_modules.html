@@ -6,11 +6,11 @@
     <div class="add_new_product_container_header_wrapper">
         <p class="add_new_product_container_header">Add product</p>
         <div class="add_new_product_window_reset_form">
-            <button class="add_new_product_window_reset_form_btn add_new_product_window_save_btn ">
-                <p>Save Product</p>
-            </button>
             <button class="add_new_product_window_reset_form_btn">
                 <p>Reset fields</p>
+            </button>
+            <button class="add_new_product_window_reset_form_btn add_new_product_window_save_btn ">
+                <p>Save Product</p>
             </button>
         </div>
     </div>
@@ -47,7 +47,8 @@
         </div>
         
     </div>
-    {% for product in warehouse_products %}
+    <div class=" product_card_contener product_card_add_product_search_container ">
+        {% for product in warehouse_products %}
     <div class="product_card_add_product_search">
         <div class="sorting_table sorting_table_add_product_search">
             <p>Product name</p><p>Product code (SKU)</p><p>Price (netto)</p><p>Availability</p><p style="border: none;">EAN code</p>
@@ -65,6 +66,8 @@
     </div>
     
     {% endfor %}
+    </div>
+    
 </div>
 
 
@@ -105,7 +108,17 @@
 {% block sidebar_content %}
 
 <div class="sidebar_card">
-    
+    <p class="sidebar_title">Manage products</p>
+    <div class="basket_summary">
+        <p class="sidebar_title">Products to add</p>
+        <p class="empty_basket subtext" style="display: block;">No products were choosen</p>
+        <div class="basket_products_list add_product_list"></div>
+        <div class="total_window">
+            <div class="product_card_add_product_save_changes">
+                <button class="product_card_add_product_save_changes_btn"><p>Migrate to warehouse</p></button>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 

@@ -459,6 +459,7 @@ const add_new_product_window_product_name = document.querySelector(".add_new_pro
 const add_new_product_window_product_code_sku = document.querySelector(".add_new_product_window_product_code_sku > label > input")
 const add_new_product_window_product_ean = document.querySelector(".add_new_product_window_product_ean > label > input")
 const add_new_product_window_product_price = document.querySelector(".add_new_product_window_product_price > label > input")
+const add_new_product_window_product_qty = document.querySelector(".add_new_product_window_product_stock_qty > label > input")
 const productCards = document.querySelectorAll(".product_card");
 
 function add_product_sortByx(add_new_product_window_product, product_sortBy) {
@@ -514,7 +515,33 @@ add_new_product_window_reset_form_btn.addEventListener("click", function() {
 });
 
 const add_new_product_window_save_btn = document.querySelector(".add_new_product_window_save_btn")
+const add_product_list = document.querySelector(".add_product_list")
 
 add_new_product_window_save_btn.addEventListener("click", function() {
-    alert("Product has been succesfuly saved in warehouse stock!")
+    // alert("Product has been succesfuly saved in warehouse stock!")
+    const add_new_product_window_product_name_value= add_new_product_window_product_name.value
+    const add_new_product_window_product_code_sku_value = add_new_product_window_product_code_sku.value
+    const add_new_product_window_product_price_value = add_new_product_window_product_price.value
+    const add_new_product_window_product_ean_value = add_new_product_window_product_ean.value
+    const add_new_product_window_product_qty_value = add_new_product_window_product_qty.value
+    console.log(add_new_product_window_product_qty_value);
+
+    const add_product_object = document.createElement("div")
+    add_product_object.classList.add("add_product_object")
+    add_product_object.innerHTML = `
+                <div class="add_product_item_name">
+                    <p>${add_new_product_window_product_name_value}</p>
+                </div>
+                <div class="add_product_item_qty">
+                    <p class="subtext qty_amount">${add_new_product_window_product_qty_value}</p>
+                    <p class="subtext">Qty.</p>
+
+                </div>
+                <div class="add_product_item_price" style="display: flex; align-items: center; gap: 10px;">
+                    <p class="price_amount">${add_new_product_window_product_price_value}zł</p>
+                    <button class="remove_product_btn" style="background: none; border: none; color: #ff4d4d; cursor: pointer; font-weight: bold; padding: 0 5px;">✕</button>
+                </div>
+            `;
+    add_product_list.appendChild(add_product_object)
+
 })
