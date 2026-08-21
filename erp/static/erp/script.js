@@ -590,6 +590,11 @@ add_new_product_window_save_btn.addEventListener("click", function() {
                 
             `;
     add_product_list.appendChild(add_product_object)
+    if (add_product_list.hasChildNodes()) {
+        const product_card_add_product_save_changes = document.querySelector(".product_card_add_product_save_changes")
+        product_card_add_product_save_changes.style.opacity = "1";
+        product_card_add_product_save_changes.style.pointerEvents = "all";
+    }
 
     // Nadalnie listenera na button do usuwania karty produktu, jeśli user popełni błąd może usunąć produkt z listy
     const product_card_add_product_remove_item_btn_all = document.querySelectorAll(".product_card_add_product_remove_item_btn")
@@ -597,6 +602,11 @@ add_new_product_window_save_btn.addEventListener("click", function() {
     button.addEventListener("click", function() {
         const add_product_object = button.closest(".add_product_object")
         add_product_object.remove()
+        if (add_product_list.hasChildNodes() == false) {
+        const product_card_add_product_save_changes = document.querySelector(".product_card_add_product_save_changes")
+        product_card_add_product_save_changes.style.opacity = "0.5";
+        product_card_add_product_save_changes.style.pointerEvents = "none";
+    }
     })
 })
 })}
@@ -651,3 +661,9 @@ if (migrateToWarehouseBtn) {
     });
 }
 
+const remove_product_option = document.querySelector(".remove_product_option")
+if (remove_product_option){
+    remove_product_option.addEventListener("click", function(){
+    console.log(remove_product_option);
+    })
+}

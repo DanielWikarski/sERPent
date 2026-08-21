@@ -4,7 +4,8 @@
 {% csrf_token %}
 <div class="add_new_product_container">
     <div class="add_new_product_container_header_wrapper">
-        <p class="add_new_product_container_header">Add product</p>
+        <a class="add_new_product_container_header add_new_product_option" href="{% url 'add_items_modules' %}">Add product</a>
+        <a class="add_new_product_container_header remove_new_product_option" style="opacity: 0.5;" href="{% url 'remove_items_modules' %}">Remove product</a>
         <div class="add_new_product_window_reset_form">
             <button class="add_new_product_window_reset_form_btn">
                 <p>Reset fields</p>
@@ -70,40 +71,7 @@
     
 </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 {% endblock %}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 {% block sidebar_content %}
 

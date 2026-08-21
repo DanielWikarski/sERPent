@@ -9,7 +9,10 @@ from .models import Product, Balance
 
 
 def dashboard_home(request):
-    return render(request, 'erp/dashboard.html')
+    # syntax zmienna = klasa modelu.objects.first()
+    # czyli odwołuje się do klasy modelu, biorę go jako obiekt (instancje) i następnie jako, że tam jest tylko jedna wartość, to używam .first() żeby ją pobrać.
+    account_balance = Balance.objects.first()
+    return render(request, 'erp/dashboard.html', {'balance': account_balance})
 
 def warehouse_modules(request):
     return render(request, 'erp/warehouse_modules.html', {'warehouse_products': Product.objects.all()}) 
@@ -18,7 +21,10 @@ def sales_modules(request):
     return render(request, 'erp/sales_modules.html', {'warehouse_products': Product.objects.all()}) 
 
 def add_items_modules(request):
-    return render(request, 'erp/add_items_modules.html', {'warehouse_products': Product.objects.all()})
+    return render(request, 'erp/manage_products_modules.html', {'warehouse_products': Product.objects.all()})
+
+def remove_items_modules(request):
+    return render(request, 'erp/manage_products_modules_remove.html', {'warehouse_products': Product.objects.all()})
 
 def sales_modules_checkout(request):
     return render(request, 'erp/sales_modules_checkout.html')
