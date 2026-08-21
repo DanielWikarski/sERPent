@@ -1,7 +1,7 @@
 {% extends 'erp/base.html' %}
-{% csrf_token %}
-{% block main_content %}
 
+{% block main_content %}
+{% csrf_token %}
 <div class="add_new_product_container">
     <div class="add_new_product_container_header_wrapper">
         <p class="add_new_product_container_header">Add product</p>
@@ -111,13 +111,15 @@
     <p class="sidebar_title">Manage products</p>
     <div class="basket_summary">
         <p class="sidebar_title">Products to add</p>
-        <p class="empty_basket subtext" style="display: block;">No products were choosen</p>
+        <div class="table_breaker_light"></div>
         <div class="basket_products_list add_product_list"></div>
+        <div class="table_breaker_light"></div>
         <div class="total_window">
             <div class="product_card_add_product_save_changes">
                 <button class="product_card_add_product_save_changes_btn"><p>Migrate to warehouse</p></button>
             </div>
         </div>
+
     </div>
 </div>
 {% endblock %}

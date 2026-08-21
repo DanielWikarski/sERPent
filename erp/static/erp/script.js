@@ -360,13 +360,22 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="add_product_item_name">
                     <p>${item.name}</p>
                 </div>
+                <p class="subtext subtext_unit_type" style="text-align:left" >Product name</p>
+                <div class="table_breaker_light"></div>
                 <div class="add_product_item_qty">
                     <input type="number" class="subtext qty_amount" value="${item.qty}" min="1" data-sku="${sku}">
-                    <p class="subtext">Qty.</p>
+                    <p class="subtext">QTY.</p>
                 </div>
+                <p class="subtext subtext_unit_type" style="text-align:left" >item quantity</p>
+                <div class="table_breaker_light"></div>
                 <div class="add_product_item_price" style="display: flex; align-items: center; gap: 10px;">
-                    <p class="price_amount">${itemTotal.toFixed(2)}zł</p>
-                    <button class="remove_product_btn" style="background: none; border: none; color: #ff4d4d; cursor: pointer; font-weight: bold; padding: 0 5px;">✕</button>
+                    <p class="price_amount">${itemTotal.toFixed(2)}</p><p class="subtext">zł.</p>
+                </div>
+                <p class="subtext subtext_unit_type" style="text-align:left" >Unit price (netto)</p>
+                <div class ="remove_product">
+                <button class="remove_product_btn">
+                    <svg class="icon_small_size" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M183.1 137.4C170.6 124.9 150.3 124.9 137.8 137.4C125.3 149.9 125.3 170.2 137.8 182.7L275.2 320L137.9 457.4C125.4 469.9 125.4 490.2 137.9 502.7C150.4 515.2 170.7 515.2 183.2 502.7L320.5 365.3L457.9 502.6C470.4 515.1 490.7 515.1 503.2 502.6C515.7 490.1 515.7 469.8 503.2 457.3L365.8 320L503.1 182.6C515.6 170.1 515.6 149.8 503.1 137.3C490.6 124.8 470.3 124.8 457.8 137.3L320.5 274.7L183.1 137.4z"/></svg>
+                </button>
                 </div>
             `;
             
@@ -498,50 +507,147 @@ document.querySelectorAll('.chose_existing_one_btn').forEach(button => {
         const ean = parentCard.querySelector('.product_ean')?.textContent.trim() || '';
         if (add_new_product_window_product_name) add_new_product_window_product_name.value = name;
         if (add_new_product_window_product_code_sku) add_new_product_window_product_code_sku.value = sku;
-        if (add_new_product_window_product_price) add_new_product_window_product_price.value = parseFloat(price) || '';
+        if (add_new_product_window_product_price) add_new_product_window_product_price.value = parseFloat(price).toFixed(2) || '';
         if (add_new_product_window_product_ean) add_new_product_window_product_ean.value = ean;
+        add_new_product_window_product_name.dispatchEvent(new Event("input"));
+
     });
 });
 
 // Zachowanie buttona reset, po wciśnięciu live search się ukrywa, a formularz jest  zresetowany
 const add_new_product_window_reset_form_btn = document.querySelector(".add_new_product_window_reset_form_btn")
-
-add_new_product_window_reset_form_btn.addEventListener("click", function() {
+if (add_new_product_window_reset_form_btn){
+    add_new_product_window_reset_form_btn.addEventListener("click", function() {
     add_new_product_window_product_name.value = "";
     add_new_product_window_product_ean.value = "";
     add_new_product_window_product_code_sku.value = "";
     add_new_product_window_product_price.value = "";
+    add_new_product_window_product_qty.value = "";
     add_new_product_window_product_name.dispatchEvent(new Event("input"));
 });
+}
+
 
 const add_new_product_window_save_btn = document.querySelector(".add_new_product_window_save_btn")
 const add_product_list = document.querySelector(".add_product_list")
 
+if  (add_new_product_window_save_btn) {
 add_new_product_window_save_btn.addEventListener("click", function() {
-    // alert("Product has been succesfuly saved in warehouse stock!")
     const add_new_product_window_product_name_value= add_new_product_window_product_name.value
     const add_new_product_window_product_code_sku_value = add_new_product_window_product_code_sku.value
     const add_new_product_window_product_price_value = add_new_product_window_product_price.value
     const add_new_product_window_product_ean_value = add_new_product_window_product_ean.value
-    const add_new_product_window_product_qty_value = add_new_product_window_product_qty.value
-    console.log(add_new_product_window_product_qty_value);
+    const add_new_product_window_product_qty_value = Number(add_new_product_window_product_qty.value)
+    if ((add_new_product_window_product_qty_value && add_new_product_window_product_ean_value &&
+        add_new_product_window_product_price_value && add_new_product_window_product_code_sku_value &&
+        add_new_product_window_product_name_value) == ""
+    ) {
+        alert("Product details are not filled!")
+        return
+    }
 
+    if ((add_new_product_window_product_qty_value <= 0) || !Number.isInteger(add_new_product_window_product_qty_value) ){
+        alert("Product quantity has to be positive whole number!")
+        return 
+    }
+    if ((add_new_product_window_product_price_value) <= 0 ){
+        alert("Product price has to be positive number!")
+        return 
+    }
     const add_product_object = document.createElement("div")
     add_product_object.classList.add("add_product_object")
     add_product_object.innerHTML = `
                 <div class="add_product_item_name">
                     <p>${add_new_product_window_product_name_value}</p>
                 </div>
+                <p class="subtext subtext_unit_type" style="text-align:left" >Product name</p>
+                <div class="table_breaker_light"></div>
+                <div class="add_product_code_sku">
+                    <p>${add_new_product_window_product_code_sku_value}</p>
+                </div>
+                <p class="subtext subtext_unit_type" style="text-align:left" >Product code (SKU)</p>
+                <div class="table_breaker_light"></div>
+                <div class="add_product_item_price">
+                    <p class="price_amount">${parseFloat(add_new_product_window_product_price_value).toFixed(2)}</p><p class="price_amount_currency">zł.</p>
+                </div>
+                <p class="subtext subtext_unit_type" style="text-align:left" >Unit price (netto)</p>
+                <div class="table_breaker_light"></div>
                 <div class="add_product_item_qty">
                     <p class="subtext qty_amount">${add_new_product_window_product_qty_value}</p>
-                    <p class="subtext">Qty.</p>
-
+                    <p class="subtext">qty.</p>
                 </div>
-                <div class="add_product_item_price" style="display: flex; align-items: center; gap: 10px;">
-                    <p class="price_amount">${add_new_product_window_product_price_value}zł</p>
-                    <button class="remove_product_btn" style="background: none; border: none; color: #ff4d4d; cursor: pointer; font-weight: bold; padding: 0 5px;">✕</button>
+                <p class="subtext subtext_unit_type" style="text-align:left" >item quantity</p>
+                <div class="table_breaker_light"></div>
+                <div class="add_product_item_ean">
+                    <p class="subtext ean_code">${add_new_product_window_product_ean_value}</p>
                 </div>
+                <p class="subtext subtext_unit_type" style="text-align:left" >EAN code</p>
+                <div class="product_card_add_product_remove_item">
+                    <button class="product_card_add_product_remove_item_btn">
+                        <svg class="icon_small_size" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.3.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M183.1 137.4C170.6 124.9 150.3 124.9 137.8 137.4C125.3 149.9 125.3 170.2 137.8 182.7L275.2 320L137.9 457.4C125.4 469.9 125.4 490.2 137.9 502.7C150.4 515.2 170.7 515.2 183.2 502.7L320.5 365.3L457.9 502.6C470.4 515.1 490.7 515.1 503.2 502.6C515.7 490.1 515.7 469.8 503.2 457.3L365.8 320L503.1 182.6C515.6 170.1 515.6 149.8 503.1 137.3C490.6 124.8 470.3 124.8 457.8 137.3L320.5 274.7L183.1 137.4z"/></svg>
+                    </button>
+                </div>
+                
             `;
     add_product_list.appendChild(add_product_object)
 
+    // Nadalnie listenera na button do usuwania karty produktu, jeśli user popełni błąd może usunąć produkt z listy
+    const product_card_add_product_remove_item_btn_all = document.querySelectorAll(".product_card_add_product_remove_item_btn")
+    product_card_add_product_remove_item_btn_all.forEach(function(button){
+    button.addEventListener("click", function() {
+        const add_product_object = button.closest(".add_product_object")
+        add_product_object.remove()
+    })
 })
+})}
+
+// DOKOŃCZYĆ!!! ZROBIĆ BLOKADĘ UI NA WYSYŁANIE MIGRATE TO WAREHOUSE
+
+// Wysyłanie produktów do magazynu
+
+const migrateToWarehouseBtn = document.querySelector(".product_card_add_product_save_changes_btn");
+
+if (migrateToWarehouseBtn) {
+    migrateToWarehouseBtn.addEventListener("click", function() {
+        const addedProductCards = document.querySelectorAll(".add_product_object");
+        let products_to_migrate = [];
+
+        addedProductCards.forEach(card => {
+            products_to_migrate.push({
+                name: card.querySelector('.add_product_item_name p').textContent.trim(),
+                sku: card.querySelector('.add_product_code_sku p').textContent.trim(),
+                price: card.querySelector('.price_amount').textContent.trim(),
+                qty: card.querySelector('.qty_amount').textContent.trim(),
+                ean: card.querySelector('.ean_code').textContent.trim()
+            });
+        });
+        if (products_to_migrate.length === 0) {
+            alert("You have not entered any products to add!");
+            return;
+        }
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        fetch('/migrate_products/', { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify(products_to_migrate)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert("Products have been succesfully added to warehouse stock!");
+                document.querySelector(".add_product_list").innerHTML = "";
+            } else {
+                alert("Error has occured during migration process! " + data.message);
+            }
+        })
+        .catch(error => {
+            console.error("Fetch error:", error);
+            alert("Fatal error - server does not respond!");
+        });
+    });
+}
+
